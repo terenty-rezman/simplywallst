@@ -1,0 +1,5 @@
+# git commit dir workaround
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore
