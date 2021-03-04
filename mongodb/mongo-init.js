@@ -1,1 +1,1 @@
-db = db.getSiblingDB('simplywallst')
+// init mongo db here
