@@ -5,7 +5,7 @@ which retrieves data from `https://api.simplywall.st` in following steps:
 1) retreives company list size
 2) retreives company list in chunks
 3) downloads detailed per company info in json format using company list<br />
-   (example data that gets stored can be seen at)<br />
+   (example data that gets retreived can be seen at)<br />
    <https://api.simplywall.st/api/company/stocks/us/tech/nasdaq-aapl/apple?include=info,score%2Cscore%2Canalysis.extended.raw_data%2Canalysis.extended.raw_data.insider_transactions&version=2.0>
 2) stores retrieved jsons 'as is' into `mongodb`
 
@@ -35,4 +35,10 @@ http://127.0.0.1:5000/simplywallst/AAPL
 
 __./mongodb/docker-compose.yml__
 
-contains config to run `mongodb` in a docker container with docker volume mounted to `./mongodb/database/` to store database files
+contains config to run `mongodb` in a docker container with docker volume mounted to `./mongodb/database/` to store database files.<br />
+To run container use:
+```
+$ cd ./mongodb
+$ sudo docker-compose up -d
+```
+
