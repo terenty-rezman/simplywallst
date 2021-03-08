@@ -129,7 +129,7 @@ if __name__ == "__main__":
     concurrent_requests = 7
     for n_companies in n_at_a_time(concurrent_requests, companies()):
         need_sleep = asyncio.run(request_multiple_companies_detailed(n_companies))
-        # random sleep to relieve the stress on api
+        # random sleep to relieve stress on api
         if need_sleep:
             time.sleep(random.randint(1, 3))
         else:
