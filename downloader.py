@@ -56,23 +56,6 @@ def requests_company_list_chunk(offset, size=24):
     return r.json()["data"]
 
 
-def request_company_detailed(canonical_url: str):
-    base_url = "https://api.simplywall.st/api/company"
-    include = [
-        'info',
-        'score',
-        'analysis.extended.raw_data',
-        'analysis.extended.raw_data.insider_transactions'
-    ]
-    params = {'include': ','.join(include), 'version': '2.0'}
-    params = '?' + urllib.parse.urlencode(params)
-
-    url = base_url + canonical_url + params
-
-    r = request_with_retries_sync(method='GET', url=url)
-    return r.json()["data"]
-
-
 def companies():
     total_count = request_companies_count()
     print("total companies count:", total_count)
@@ -149,5 +132,7 @@ if __name__ == "__main__":
         # random sleep to relieve the stress on api
         if need_sleep:
             time.sleep(random.randint(1, 3))
+        else:
+            time.sleep(1)
 
     print('\ndone')
