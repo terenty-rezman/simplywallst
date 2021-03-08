@@ -117,23 +117,23 @@ async def request_company_detailed_async(canonical_url: str):
 
 
 async def request_multiple_companies_detailed(companies):
-    try:
-        tasks = []
-        for company in companies:
-            ticker = company["ticker_symbol"]
-            ticker_in_db = db.companies.find_one({"ticker_symbol": ticker})
-            if ticker_in_db is None:
-                canonical_url = company["canonical_url"]
-                tasks.append(
-                    request_company_detailed_async(session, canonical_url)
-                )
+    tasks = []
+    for company in companies:
+        ticker = company["ticker_symbol"]
+        ticker_in_db = db.companies.find_one({"ticker_symbol": ticker})
+        if ticker_in_db is None:
+            canonical_url = company["canonical_url"]
+            tasks.append(
+                request_company_detailed_async(canonical_url)
+            )
 
-        detailed_infos = await asyncio.gather(*tasks)
+    detailed_infos = await asyncio.gather(*tasks)
 
-        for company_info in detailed_infos:
-            db.companies.insert_one(company_info)
-    except Exception as e:
-        print(e)
+    for company_info in detailed_infos:
+        db.companies.insert_one(company_info)
+    
+    made_requests = True if tasks else False
+    return made_requests
 
 
 if __name__ == "__main__":
@@ -145,8 +145,9 @@ if __name__ == "__main__":
     # fill db with company info
     concurrent_requests = 7
     for n_companies in n_at_a_time(concurrent_requests, companies()):
-        asyncio.run(request_multiple_companies_detailed(n_companies))
+        need_sleep = asyncio.run(request_multiple_companies_detailed(n_companies))
         # random sleep to relieve the stress on api
-        time.sleep(random.randint(1, 3))
+        if need_sleep:
+            time.sleep(random.randint(1, 3))
 
     print('\ndone')
