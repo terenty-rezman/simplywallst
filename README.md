@@ -4,7 +4,7 @@ is a downloading script
 which retrieves data from `https://api.simplywall.st` in following steps:
 1) retreives company list size
 2) retreives company list in chunks
-3) downloads detailed per company info in json data using company list
+3) downloads detailed per company info in json format using company list
 2) stores retrieved jsons 'as is' into `mongodb`
 
 to run `downloader.py` use:
