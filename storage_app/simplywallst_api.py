@@ -13,6 +13,8 @@ def get_file(ticker):
 
     dbs = db.get_db()
     dbs = dbs.simplywallst
+
+    # {"_id": 0} removes mongodb "_id" property from result
     company_info = dbs.companies.find_one({"ticker_symbol": ticker}, {"_id": 0})
 
     if company_info is None:
