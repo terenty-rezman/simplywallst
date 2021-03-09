@@ -5,7 +5,7 @@ def timestamp_print(*args, **kwargs):
     print(timestamp, *args, **kwargs)
 
 def n_at_a_time(n, iterable):
-    """returns list with max of `n` elements at a time."""
+    """returns list with max of `n` elements at a time from iterable."""
     exhausted = False
     while not exhausted:
         n_items = []
@@ -17,8 +17,6 @@ def n_at_a_time(n, iterable):
         if n_items:
             yield n_items
     return
-
-    return zip_varlen(*stepped_slices)
 
 
 # taken from https://gist.github.com/dhrrgn/7255361
