@@ -71,7 +71,12 @@ def companies():
             yield company
 
 
-@backoff.on_exception(backoff.expo, (aiohttp.ClientError, asyncio.TimeoutError))
+def no_retry_code(e):
+    # dont retry request if 404 received
+    return e.status == 404
+
+
+@backoff.on_exception(backoff.expo, (aiohttp.ClientError, asyncio.TimeoutError), giveup=no_retry_code)
 async def request_with_retries(**kwargs):
     try:
         timeout = aiohttp.ClientTimeout(total=20)
@@ -95,7 +100,12 @@ async def request_company_detailed_async(canonical_url: str):
 
     url = base_url + canonical_url + params
 
-    json = await request_with_retries(method='GET', url=url)
+    try:
+        json = await request_with_retries(method='GET', url=url)
+    except aiohttp.ClientResponseError as e:
+        # request is allowed to fail when 404 received
+        return None
+    
     return json["data"]
 
 
@@ -110,11 +120,14 @@ async def request_multiple_companies_detailed(companies):
                 request_company_detailed_async(canonical_url)
             )
 
-    detailed_infos = await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
 
-    for company_info in detailed_infos:
+    # some request are allowed to fail and return None
+    results = [item for item in results if item is not None]
+
+    for company_info in results:
         db.companies.insert_one(company_info)
-    
+
     made_requests = True if tasks else False
     return made_requests
 
@@ -128,7 +141,8 @@ if __name__ == "__main__":
     # fill db with company info
     concurrent_requests = 7
     for n_companies in n_at_a_time(concurrent_requests, companies()):
-        need_sleep = asyncio.run(request_multiple_companies_detailed(n_companies))
+        need_sleep = asyncio.run(
+            request_multiple_companies_detailed(n_companies))
         # random sleep to relieve stress on api
         if need_sleep:
             time.sleep(random.randint(1, 3))
