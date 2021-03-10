@@ -18,11 +18,3 @@ def close_db(e=None):
 
 def init_app(flask_app):
     flask_app.teardown_appcontext(close_db)
-
-
-def query_file_path(alias: str):
-    return db._query_file_path(get_db(), alias)
-
-
-def update_file_path(alias: str, path: str):
-    return db._update_file_path(get_db(), alias, path)
