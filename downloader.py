@@ -106,17 +106,23 @@ async def request_company_detailed_async(canonical_url: str):
     except aiohttp.ClientResponseError as e:
         # request is allowed to fail when 404 received
         return None
-    
+
     return json["data"]
 
 
 async def request_multiple_companies_detailed(companies):
     # check if companies already in db
-    tickers_to_check = [{"ticker_symbol": company["ticker_symbol"]} for company in companies]
+    tickers_to_check = [
+        {"ticker_symbol": company["ticker_symbol"]} for company in companies
+    ]
 
-    # single request to db; return only "ticker_symbol"
-    companies_in_db = db.companies.find({"$or": tickers_to_check}, {"ticker_symbol": 1})
+    # single request to db
+    companies_in_db = db.companies.find(
+        {"$or": tickers_to_check},
+        {"ticker_symbol": 1, "_id": 0}  # return only "ticker_symbol"
+    )
 
+    # put tickers in a set
     tickers_in_db = {company["ticker_symbol"] for company in companies_in_db}
 
     companies_not_in_db = (
