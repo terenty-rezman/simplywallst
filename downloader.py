@@ -125,8 +125,8 @@ async def request_multiple_companies_detailed(companies):
     # some request are allowed to fail and return None
     results = [item for item in results if item is not None]
 
-    for company_info in results:
-        db.companies.insert_one(company_info)
+    if results:
+        db.companies.insert_many(results)
 
     made_requests = True if tasks else False
     return made_requests
