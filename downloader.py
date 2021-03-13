@@ -73,7 +73,8 @@ def companies():
 
 def no_retry_code(e):
     # dont retry request if 404 received
-    return e.status == 404
+    if isinstance(e, aiohttp.ClientResponseError):
+        return e.status == 404
 
 
 @backoff.on_exception(backoff.expo, (aiohttp.ClientError, asyncio.TimeoutError), giveup=no_retry_code)
@@ -110,15 +111,25 @@ async def request_company_detailed_async(canonical_url: str):
 
 
 async def request_multiple_companies_detailed(companies):
+    # check if companies already in db
+    tickers_to_check = [{"ticker_symbol": company["ticker_symbol"]} for company in companies]
+
+    # single request to db; return only "ticker_symbol"
+    companies_in_db = db.companies.find({"$or": tickers_to_check}, {"ticker_symbol": 1})
+
+    tickers_in_db = {company["ticker_symbol"] for company in companies_in_db}
+
+    companies_not_in_db = (
+        company for company in companies if company["ticker_symbol"] not in tickers_in_db
+    )
+
+    # only download data for companies that are NOT in db already
     tasks = []
-    for company in companies:
-        ticker = company["ticker_symbol"]
-        ticker_in_db = db.companies.find_one({"ticker_symbol": ticker})
-        if ticker_in_db is None:
-            canonical_url = company["canonical_url"]
-            tasks.append(
-                request_company_detailed_async(canonical_url)
-            )
+    for company in companies_not_in_db:
+        canonical_url = company["canonical_url"]
+        tasks.append(
+            request_company_detailed_async(canonical_url)
+        )
 
     results = await asyncio.gather(*tasks)
 
